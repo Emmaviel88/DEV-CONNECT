@@ -1,22 +1,23 @@
 const mongoose = require('mongoose');
 const ProjectObject = require('../models/project.model');
 
-exports.getAllProjects = (req, res) => {
+// Récupérer la liste de tous les projets avec uniquement les champs title et description, triés par date de création (du plus récent au plus ancien)
+exports.getAllProjects = async (req, res) => {
   try {
     // Récupérer la liste de tous les projets avec uniquement les champs title et description, triés par date de création (du plus récent au plus ancien)
     // Rq : Entre accolades, on précise le critère éventuel (c'est l'équivalent du WHERE)
-    const projects = ProjectObject.find({}, 'title description').sort({ createdAt: -1 });
-          // .find({}, 'title description')
-          // .sort({ createdAt: -1 });
-
+    const projects = await ProjectObject
+        .find({}, 'title description')
+        .sort({ createdAt: -1 });
+        
     // Retourner la liste des projets
     res.status(200).json(projects);
   } catch (error) {
-    res.status(500).json({ erreur: 'Erreur lors de la récupération des projets' });
+    res.status(500).json({ erreur: 'L16: Erreur lors de la récupération des projets' });
   }
 };
 
-exports.getProject = (req, res) => {
+exports.getProject = async (req, res) => {
   // Récupérer l'ID du projet à partir des paramètres de la requête
   const id = req.params.id;
   console.log('ID du projet demandé :', id);
@@ -25,18 +26,22 @@ exports.getProject = (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ erreur: 'ID de projet invalide' });
   }
+  try {
+        // Rechercher les détails (title, description, skills, image) d'un projet à partir de son ID
+         const project = await ProjectObject.findById(id)
+            .select('title description skills image createdAt updatedAt'); // Sélectionner uniquement les champs souhaités
 
-  // Rechercher les détails (title, description, skills, image) d'un projet à partir de son ID
-  const project = ProjectObject.findById(id)
-    .select('title description skills image');
+        // Si le projet n'existe pas, retourner une erreur 404
+        if (!project) {
+          return res.status(404).json({ erreur: 'L36: Projet non trouvé' });
+        }
 
-  // Si le projet n'existe pas, retourner une erreur 404
-  if (!project) {
-    return res.status(404).json({ erreur: 'Projet non trouvé' });
-  }
-
-  // Si le projet existe, retourner les détails de celui-ci
-  res.status(200).json(project);
+        // Si le projet existe, retourner les détails de celui-ci
+        res.status(200).json(project);
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ erreur: 'L43: Erreur lors de la récupération du projet' });
+      }
 };
 
 exports.createProject = async (req, res) => {

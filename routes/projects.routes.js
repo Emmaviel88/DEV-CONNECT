@@ -14,7 +14,8 @@ router.get('/:id', getProject);
 //router.post('/', auth, upload.single('image'), createProject);
 router.post('/', auth, createProject);
 // Modification d'un projet. C'est une modification, donc PUT et on précise l'ID du projet à modifier
-router.put('/:id', auth, upload.single('image'), updateProject);
+//router.put('/:id', auth, upload.single('image'), updateProject);
+router.put('/:id', auth, updateProject);
 
 // Suppression d'un projet. C'est une suppression, donc DELETE et on précise l'ID du projet à supprimer
 router.delete('/:id', auth, deleteProject);

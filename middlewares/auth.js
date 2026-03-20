@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken'); 
+
 // Récupération du token qui est toujours envoyé dans le header de la requête
 const auth = (req, res, next) => {
     // Récupérer le token après "Bearer ". 
@@ -5,8 +7,10 @@ const auth = (req, res, next) => {
     // La fonction split permet de séparer la chaîne de caractères en deux parties : 
     // "Bearer" et le token lui-même. On prend la deuxième partie (index 1) qui est le token. 
     const token = req.header('Authorization').split(' ')[1]; 
+    console.log("Token reçu : " + token);
+    
     if (!token) {
-        return res.status(401).json({ erreur: 'Veuillez vous connecter' });
+        return res.status(401).json({ erreur: 'L11 : Veuillez vous connecter' });
     }
     try {
         // Vérifier le token et récupérer les informations de l'utilisateur
@@ -16,7 +20,7 @@ const auth = (req, res, next) => {
         req.user = decodedUser;
         next();
     } catch (er) {
-        return res.status(401).json({ erreur: 'Veuillez vous connecter' });
+        return res.status(401).json({ erreur: 'L21 : Veuillez vous connecter' });
     }
 }
 

@@ -48,7 +48,5 @@ app.use('/api/users', require('./routes/users.routes'));
 
 // like / unlike un projet
 // commenter un projet (création d'un commentaire)
-// supprimer un projet
-// modifier un projet
 
 app.listen(port, () => console.log(`Server started on port ${port}`));
