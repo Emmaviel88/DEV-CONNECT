@@ -75,6 +75,7 @@ exports.createProject = async (req, res) => {
         description,
         skills,
         image,
+        //author: "69b7110212f50a658261ff59", // Placeholder pour l'auteur, à remplacer par l'ID de l'utilisateur connecté une fois que l'authentification est mise en place
         author: req.user.userId, // Remplacez par l'ID de l'utilisateur connecté (ex: req.user._id) une fois que l'authentification est mise en place
         likes: [],    // Initialiser les likes un tableau vide
         comments: []  // Initialiser les comments à un tableau vide
@@ -84,6 +85,63 @@ exports.createProject = async (req, res) => {
       const savedProject = await newProject.save();
       res.status(201).json(savedProject);
   } catch (error) {
+      console.error(error);
       res.status(500).json({ erreur: 'Erreur lors de la création du projet' });
   } 
+};
+
+exports.updateProject = async (req, res) => {
+  try {
+        // Récupérer les données du projet à partir du corps de la requête
+        const { title, description, skills, image } = req.body;
+        // Récupérer l'ID du projet à partir des paramètres de la requête
+        const { id } = req.params;
+        // Rechercher le prjet par son ID
+        const project = await ProjectObject.findById(id);
+        // Vérifier si le projet existe
+        if (!project) {
+          return res.status(404).json({ erreur: 'Projet non trouvé' });
+        }
+        // Vérifier que l'utilisateur connecté est l'auteur du projet (seul autorisé à le modifier)
+        if(project.author.toString() !== req.user.userId) {
+          return res.status(403).json({ erreur: 'Vous n\'êtes pas autorisé à modifier ce projet' });
+        }
+        // Mettre à jour les champs du projet avec les nouvelles valeurs fournies (si elles sont présentes)
+        if (title) 
+          project.title = title;
+        if (description) 
+          project.description = description;
+        if (skills) 
+          project.skills = skills;
+        if (image) 
+          project.image = image;
+        // Enregistrer les modifications 
+        const updatedProject = await project.save();
+        // Retourner le projet mis à jour
+        res.status(200).json(updatedProject);
+      } catch (error) {
+        res.status(500).json({ erreur: 'Erreur lors de la mise à jour du projet' });
+      }
+};
+
+exports.deleteProject = async (req, res) => {
+  try {
+        // Récupérer l'ID du projet à partir des paramètres de la requête
+        const { id } = req.params;
+        // Rechercher le projet par son ID
+        const project = await ProjectObject.findById(id);
+        // Si le projet n'existe pas, retourne une erreur 404
+        if (!project) {
+          return res.status(404).json({ erreur: 'Projet non trouvé' });
+        }
+        // Vérifier que l'utilisateur connecté est l'auteur du projet (seul autorisé à le supprimer)
+        if(project.author.toString() !== req.user.userId) {
+          return res.status(403).json({ erreur: 'Vous n\'êtes pas autorisé à supprimer ce projet' });
+        }
+        // Supprimer le projet
+        await ProjectObject.deleteOne();
+        res.status(200).json({ message: 'Projet supprimé avec succès' });
+        } catch (error) {
+          res.status(500).json({ erreur: 'Erreur lors de la suppression du projet' });
+        } 
 };
